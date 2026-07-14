@@ -7,7 +7,8 @@ import type {
   UpdateTaskInput,
 } from "@kanban/shared";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+// Empty string = same-origin (Next.js rewrites proxy /api to the Fastify server).
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
