@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppNav } from "@/components/AppNav";
+import { PixelRoot } from "@/components/PixelRoot";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -20,10 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <ThemeProvider>
-          <AppNav />
-          <main className="page">{children}</main>
-        </ThemeProvider>
+        <PixelRoot>
+          <ThemeProvider>
+            <AppNav />
+            <main className="page">{children}</main>
+          </ThemeProvider>
+        </PixelRoot>
       </body>
     </html>
   );

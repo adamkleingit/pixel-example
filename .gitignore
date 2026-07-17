@@ -10,3 +10,4 @@ coverage
 storybook-static
 *.tsbuildinfo
 .turbo
+.pixel
