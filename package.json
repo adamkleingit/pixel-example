@@ -1,0 +1,27 @@
+{
+  "name": "kanban-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "dev:client": "pnpm --filter @kanban/client dev",
+    "dev:server": "pnpm --filter @kanban/server dev",
+    "build": "pnpm -r run build",
+    "storybook": "pnpm --filter @kanban/client storybook",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:setup": "./scripts/setup-db.sh",
+    "lint": "pnpm -r run lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "core-js-pure"
+    ]
+  }
+}
