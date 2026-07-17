@@ -1,5 +1,5 @@
 import type { Decorator, Preview } from "@storybook/react";
-import { Overlay, PixelProvider, httpSink } from "@getpixel/ui";
+import { Overlay, PixelProvider, PixelStateRoot, httpSink } from "@getpixel/ui";
 import React from "react";
 import "../src/app/globals.css";
 
@@ -35,7 +35,9 @@ const withPixel: Decorator = (Story) => {
         bar: { always: true },
       }}
     >
-      <Story />
+      <PixelStateRoot enabled>
+        <Story />
+      </PixelStateRoot>
       <Overlay />
     </PixelProvider>
   );

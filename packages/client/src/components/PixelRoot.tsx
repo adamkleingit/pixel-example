@@ -1,6 +1,6 @@
 "use client";
 
-import { Overlay, PixelProvider, httpSink } from "@getpixel/ui";
+import { Overlay, PixelProvider, PixelStateRoot, httpSink } from "@getpixel/ui";
 
 const PIXEL_ENABLED = process.env.NODE_ENV !== "production";
 
@@ -13,7 +13,7 @@ export function PixelRoot({ children }: { children: React.ReactNode }) {
         bar: { always: true },
       }}
     >
-      {children}
+      <PixelStateRoot enabled={PIXEL_ENABLED}>{children}</PixelStateRoot>
       {PIXEL_ENABLED && <Overlay />}
     </PixelProvider>
   );
