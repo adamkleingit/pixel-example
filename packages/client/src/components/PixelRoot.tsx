@@ -11,6 +11,7 @@ export function PixelRoot({ children }: { children: React.ReactNode }) {
       config={{
         sink: httpSink("http://localhost:41789"),
         bar: { always: true },
+        taskPollMs: 1000,
       }}
     >
       <PixelStateRoot enabled={PIXEL_ENABLED}>{children}</PixelStateRoot>

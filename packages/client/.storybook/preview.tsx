@@ -1,5 +1,5 @@
 import type { Decorator, Preview } from "@storybook/react";
-import { Overlay, PixelProvider, PixelStateRoot, httpSink } from "@getpixel/ui";
+import { Overlay, PixelProvider, httpSink } from "@getpixel/ui";
 import React from "react";
 import "../src/app/globals.css";
 
@@ -33,11 +33,10 @@ const withPixel: Decorator = (Story) => {
       config={{
         sink: httpSink("http://localhost:41789"),
         bar: { always: true },
+        taskPollMs: 1000,
       }}
     >
-      <PixelStateRoot enabled>
-        <Story />
-      </PixelStateRoot>
+      <Story />
       <Overlay />
     </PixelProvider>
   );
