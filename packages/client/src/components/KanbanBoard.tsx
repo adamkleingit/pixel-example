@@ -222,7 +222,7 @@ export function KanbanBoard() {
       <div className="page-header">
         <div>
           <h1>Board</h1>
-          <p>Drag cards between Todo, Doing, To Review, and Done.</p>
+          <p>Drag cards between Todo, In Progress, To Review, and Done.</p>
         </div>
         <button type="button" className="btn" onClick={openCreate}>
           New task

@@ -289,7 +289,7 @@ button {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   padding: 0.2rem 0.45rem;
-  border-radius: 999px;
+  border-radius: 25px;
   background: color-mix(in srgb, var(--color-accent) 18%, transparent);
   color: color-mix(in srgb, var(--color-accent) 70%, var(--color-text));
 }
@@ -311,8 +311,13 @@ button {
 }
 
 .icon-btn.danger {
-  background: color-mix(in srgb, #dc2626 12%, transparent);
-  color: #b91c1c;
+  background: rgb(255, 235, 235);
+  color: rgb(242, 96, 96);
+  font-weight: 700;
+}
+
+.board .column:nth-child(4) {
+  border-top-left-radius: 33px;
 }
 
 .modal-backdrop {
