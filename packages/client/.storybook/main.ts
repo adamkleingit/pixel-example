@@ -10,6 +10,7 @@ const config: StorybookConfig = {
     options: {},
   },
   async viteFinal(config) {
+    config.server = { ...config.server, allowedHosts: true, host: true };
     return mergeConfig(config, {
       resolve: {
         alias: {

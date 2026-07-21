@@ -9,14 +9,58 @@ const FONT_STACKS: Record<string, string> = {
   Literata: '"Literata", "Georgia", serif',
 };
 
+/** Convert #RRGGBB to shadcn HSL components: "H S% L%" */
+export function hexToHslComponents(hex: string): string {
+  const normalized = hex.replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16) / 255;
+  const g = parseInt(normalized.slice(2, 4), 16) / 255;
+  const b = parseInt(normalized.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    switch (max) {
+      case r:
+        h = ((g - b) / delta + (g < b ? 6 : 0)) * 60;
+        break;
+      case g:
+        h = ((b - r) / delta + 2) * 60;
+        break;
+      default:
+        h = ((r - g) / delta + 4) * 60;
+        break;
+    }
+  }
+
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
 export function themeToCssVars(theme: ThemeSettings): CSSProperties {
+  const primary = hexToHslComponents(theme.primaryColor);
+  const accent = hexToHslComponents(theme.accentColor);
+  const background = hexToHslComponents(theme.backgroundColor);
+  const foreground = hexToHslComponents(theme.textColor);
+  const card = hexToHslComponents(theme.surfaceColor);
+  const fontStack = FONT_STACKS[theme.fontFamily] ?? FONT_STACKS.Figtree;
+
   return {
+    ["--primary" as string]: primary,
+    ["--accent" as string]: accent,
+    ["--background" as string]: background,
+    ["--foreground" as string]: foreground,
+    ["--card" as string]: card,
     ["--color-primary" as string]: theme.primaryColor,
     ["--color-accent" as string]: theme.accentColor,
     ["--color-bg" as string]: theme.backgroundColor,
     ["--color-surface" as string]: theme.surfaceColor,
     ["--color-text" as string]: theme.textColor,
-    ["--font-body" as string]: FONT_STACKS[theme.fontFamily] ?? FONT_STACKS.Figtree,
+    ["--font-body" as string]: fontStack,
+    ["--font-family-body" as string]: fontStack,
     ["--radius" as string]: `${theme.borderRadius}px`,
   };
 }

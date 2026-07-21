@@ -12,7 +12,7 @@
     "db:down": "docker compose down",
     "db:setup": "./scripts/setup-db.sh",
     "lint": "pnpm -r run lint",
-    "pixel": "npx @getpixel/server"
+    "pixel": "PIXEL_PROJECT_DIR=packages/client npx @getpixel/server"
   },
   "engines": {
     "node": ">=20"

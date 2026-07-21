@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   webpack(config, { dev, isServer, webpack }) {
     if (dev && !isServer) {
       config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(/^react$/, (resource) => {
+        new webpack.NormalModuleReplacementPlugin(/^react$/, (resource: { context: string; request: string }) => {
           if (resource.context.startsWith(appSrc)) {
             resource.request = "@getpixel/ui/pixel-react";
           }
