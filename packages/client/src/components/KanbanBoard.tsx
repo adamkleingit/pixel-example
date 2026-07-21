@@ -214,7 +214,18 @@ export function KanbanBoard() {
   }
 
   if (loading) {
-    return <div className="status-banner">Loading board…</div>;
+    return (
+      <>
+        <div className="status-banner">Loading board…</div>
+        <TaskModal
+          open={modalOpen}
+          mode={editingTask ? "edit" : "create"}
+          initial={editingTask}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+        />
+      </>
+    );
   }
 
   return (

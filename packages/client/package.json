@@ -17,8 +17,8 @@
     "@getpixel/ui": "^0.3.0",
     "@kanban/shared": "workspace:*",
     "next": "^15.3.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
@@ -28,8 +28,8 @@
     "@storybook/react-vite": "8.6.18",
     "@storybook/test": "^8.6.18",
     "@types/node": "^22.15.21",
-    "@types/react": "^19.1.4",
-    "@types/react-dom": "^19.1.5",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "4.4.1",
     "storybook": "^8.6.14",
     "typescript": "^5.8.3",
