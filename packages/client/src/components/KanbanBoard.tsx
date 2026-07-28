@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -37,70 +37,37 @@ function findColumn(tasks: Task[], id: string): ColumnId | null {
   return tasks.find((task) => task.id === id)?.column ?? null;
 }
 
-export function KanbanBoard() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+type KanbanBoardViewProps = {
+  tasks: Task[];
+  error: string | null;
+  onOpenCreate: () => void;
+  onOpenEdit: (task: Task) => void;
+  onSubmit: (values: TaskFormValues) => Promise<void>;
+  onDelete: (task: Task) => Promise<void>;
+  onReload: () => Promise<void>;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+};
 
+function KanbanBoardView({
+  tasks,
+  error,
+  onOpenCreate,
+  onOpenEdit,
+  onSubmit,
+  onDelete,
+  onReload,
+  setTasks,
+  setError,
+}: KanbanBoardViewProps) {
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
     }),
   );
 
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await api.getTasks();
-      setTasks(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load tasks");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const columns = useMemo(() => groupByColumn(tasks), [tasks]);
-
-  function openCreate() {
-    setEditingTask(null);
-    setModalOpen(true);
-  }
-
-  function openEdit(task: Task) {
-    setEditingTask(task);
-    setModalOpen(true);
-  }
-
-  async function handleSubmit(values: TaskFormValues) {
-    if (editingTask) {
-      const updated = await api.updateTask(editingTask.id, values);
-      setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
-    } else {
-      const created = await api.createTask(values);
-      setTasks((prev) => [...prev, created]);
-    }
-  }
-
-  async function handleDelete(task: Task) {
-    if (!window.confirm(`Remove “${task.title}”?`)) return;
-    await api.deleteTask(task.id);
-    setTasks((prev) => {
-      const remaining = prev.filter((item) => item.id !== task.id);
-      return remaining.map((item) =>
-        item.column === task.column && item.position > task.position
-          ? { ...item, position: item.position - 1 }
-          : item,
-      );
-    });
-  }
+  const columns = groupByColumn(tasks);
 
   function handleDragStart(event: DragStartEvent) {
     const task = tasks.find((item) => item.id === event.active.id);
@@ -162,7 +129,6 @@ export function KanbanBoard() {
       const oldIndex = columnTasks.findIndex((task) => task.id === activeId);
       const newIndex = columnTasks.findIndex((task) => task.id === overId);
       if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
-        // dropped on column container
         if (overId === activeColumn) {
           const position = columnTasks.length - 1;
           const current = columnTasks[oldIndex];
@@ -209,23 +175,8 @@ export function KanbanBoard() {
       setTasks(fresh);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to move task");
-      await load();
+      await onReload();
     }
-  }
-
-  if (loading) {
-    return (
-      <>
-        <div className="status-banner">Loading board…</div>
-        <TaskModal
-          open={modalOpen}
-          mode={editingTask ? "edit" : "create"}
-          initial={editingTask}
-          onClose={() => setModalOpen(false)}
-          onSubmit={handleSubmit}
-        />
-      </>
-    );
   }
 
   return (
@@ -235,7 +186,7 @@ export function KanbanBoard() {
           <h1>Board</h1>
           <p>Drag cards between Todo, In Progress, To Review, and Done.</p>
         </div>
-        <button type="button" className="btn" onClick={openCreate}>
+        <button type="button" className="btn" onClick={onOpenCreate}>
           New task
         </button>
       </div>
@@ -255,8 +206,8 @@ export function KanbanBoard() {
               key={columnId}
               columnId={columnId}
               tasks={columns[columnId]}
-              onEdit={openEdit}
-              onDelete={handleDelete}
+              onEdit={onOpenEdit}
+              onDelete={onDelete}
             />
           ))}
         </div>
@@ -271,14 +222,99 @@ export function KanbanBoard() {
           ) : null}
         </DragOverlay>
       </DndContext>
+    </>
+  );
+}
 
-      <TaskModal
-        open={modalOpen}
-        mode={editingTask ? "edit" : "create"}
-        initial={editingTask}
-        onClose={() => setModalOpen(false)}
+export function KanbanBoard() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  async function loadTasks() {
+    try {
+      setError(null);
+      const data = await api.getTasks();
+      setTasks(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadTasks();
+  }, []);
+
+  function openCreate() {
+    setEditingTask(null);
+    setModalOpen(true);
+  }
+
+  function openEdit(task: Task) {
+    setEditingTask(task);
+    setModalOpen(true);
+  }
+
+  async function handleSubmit(values: TaskFormValues) {
+    if (editingTask) {
+      const updated = await api.updateTask(editingTask.id, values);
+      setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
+    } else {
+      const created = await api.createTask(values);
+      setTasks((prev) => [...prev, created]);
+    }
+  }
+
+  async function handleDelete(task: Task) {
+    if (!window.confirm(`Remove “${task.title}”?`)) return;
+    await api.deleteTask(task.id);
+    setTasks((prev) => {
+      const remaining = prev.filter((item) => item.id !== task.id);
+      return remaining.map((item) =>
+        item.column === task.column && item.position > task.position
+          ? { ...item, position: item.position - 1 }
+          : item,
+      );
+    });
+  }
+
+  const modal = (
+    <TaskModal
+      open={modalOpen}
+      mode={editingTask ? "edit" : "create"}
+      initial={editingTask}
+      onClose={() => setModalOpen(false)}
+      onSubmit={handleSubmit}
+    />
+  );
+
+  if (loading) {
+    return (
+      <>
+        <div className="status-banner">Loading board…</div>
+        {modal}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <KanbanBoardView
+        tasks={tasks}
+        error={error}
+        onOpenCreate={openCreate}
+        onOpenEdit={openEdit}
         onSubmit={handleSubmit}
+        onDelete={handleDelete}
+        onReload={loadTasks}
+        setTasks={setTasks}
+        setError={setError}
       />
+      {modal}
     </>
   );
 }

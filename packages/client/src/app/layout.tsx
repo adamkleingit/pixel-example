@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppNav } from "@/components/AppNav";
-import { PixelRoot } from "@/components/PixelRoot";
+import { PixelProviderShell, PixelStateBoundary } from "@/components/PixelRoot";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -21,12 +21,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <PixelRoot>
-          <ThemeProvider>
+        <ThemeProvider>
+          <PixelProviderShell>
             <AppNav />
-            <main className="page">{children}</main>
-          </ThemeProvider>
-        </PixelRoot>
+            <main className="page">
+              <PixelStateBoundary>{children}</PixelStateBoundary>
+            </main>
+          </PixelProviderShell>
+        </ThemeProvider>
       </body>
     </html>
   );

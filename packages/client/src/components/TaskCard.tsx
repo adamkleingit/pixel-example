@@ -25,13 +25,26 @@ export function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
     transition,
   };
 
+  const dragListeners =
+    isOverlay || !listeners
+      ? {}
+      : {
+          ...listeners,
+          onPointerDown(event: React.PointerEvent<HTMLElement>) {
+            if ((event.target as HTMLElement).closest(".task-actions")) {
+              return;
+            }
+            listeners.onPointerDown?.(event);
+          },
+        };
+
   return (
     <article
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
       className="task-card"
       data-dragging={isDragging && !isOverlay}
-      {...(isOverlay ? {} : { ...attributes, ...listeners })}
+      {...(isOverlay ? {} : { ...attributes, ...dragListeners })}
     >
       <h3 className="task-title">{task.title}</h3>
       {task.description ? (

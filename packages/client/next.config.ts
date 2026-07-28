@@ -2,32 +2,42 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const apiOrigin = process.env.API_PROXY_ORIGIN ?? "http://127.0.0.1:3001";
-const appSrc = path.resolve(__dirname, "src").replace(/\\/g, "/");
-const pixelReact = path.resolve(__dirname, "node_modules/@getpixel/ui/dist/pixel-react/index.js");
-const realReact = path.resolve(__dirname, "node_modules/react/index.js");
-const realReactDom = path.resolve(__dirname, "node_modules/react-dom/index.js");
-const realReactDomClient = path.resolve(__dirname, "node_modules/react-dom/client.js");
-const realJsxDevRuntime = path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js");
-const realJsxRuntime = path.resolve(__dirname, "node_modules/react/jsx-runtime.js");
+const pixelReact = path.resolve(__dirname, "src/lib/pixel-react/index.js");
+const compiledReactIndex = path.join(
+  path.dirname(require.resolve("next/package.json")),
+  "dist/compiled/react/index.js",
+);
 
 function isAppSource(context: string) {
   return context.replace(/\\/g, "/").includes("/packages/client/src");
 }
 
-function unifyReactAliases(alias: Record<string, string | false | string[]>) {
-  const next: Record<string, string | false | string[]> = { ...alias };
-  for (const [key, value] of Object.entries(alias)) {
-    if (typeof value !== "string" || !value.includes("next/dist/compiled")) continue;
-    if (key.includes("jsx-dev-runtime")) next[key] = realJsxDevRuntime;
-    else if (key.includes("jsx-runtime")) next[key] = realJsxRuntime;
-    else if (key === "react-dom/client$" || key.includes("react-dom/client")) next[key] = realReactDomClient;
-    else if (key.startsWith("react-dom")) next[key] = realReactDom;
-    else if (key.startsWith("react")) next[key] = realReact;
-  }
-  return next;
+function isPixelReactBundle(context: string) {
+  const ctx = context.replace(/\\/g, "/");
+  return ctx.includes("@getpixel/ui/dist/pixel-react") || ctx.includes("/src/lib/pixel-react");
 }
 
+const EXCLUDED_FROM_CAPTURE = [
+  "/components/ThemeProvider",
+  "/components/AppNav",
+  "/components/PixelRoot",
+  "/app/layout",
+];
+
+function shouldAliasPixelReact(context: string) {
+  const ctx = context.replace(/\\/g, "/");
+  if (isPixelReactBundle(ctx)) return false;
+  if (ctx.includes("@getpixel/ui/dist")) return false;
+  if (!isAppSource(ctx)) return false;
+  // Keep ThemeProvider / shell chrome on plain React so their hooks are not captured.
+  return !EXCLUDED_FROM_CAPTURE.some((segment) => ctx.includes(segment));
+}
+
+const COMPILED_REACT = /next[\\/]dist[\\/]compiled[\\/]react[\\/]index\.js$/;
+
 const nextConfig: NextConfig = {
+  // StrictMode double-invokes hooks in dev and desyncs pixel-react capture.
+  reactStrictMode: false,
   transpilePackages: ["@kanban/shared", "@getpixel/ui"],
   async rewrites() {
     return [
@@ -39,21 +49,23 @@ const nextConfig: NextConfig = {
   },
   webpack(config, { dev, isServer, webpack }) {
     if (dev && !isServer) {
-      config.resolve.alias = unifyReactAliases(config.resolve.alias ?? {});
-
       config.plugins.unshift(
         new webpack.NormalModuleReplacementPlugin(/^react$/, (resource: { context: string; request: string }) => {
           const ctx = resource.context.replace(/\\/g, "/");
 
-          if (ctx.includes("@getpixel/ui/dist/pixel-react")) {
+          // pixel-react must delegate to the same React instance Next's react-dom uses.
+          if (isPixelReactBundle(ctx)) {
+            resource.request = compiledReactIndex;
             return;
           }
 
-          if (ctx.includes("@getpixel/ui/dist") && !ctx.includes("pixel-react")) {
-            return;
+          if (shouldAliasPixelReact(ctx)) {
+            resource.request = pixelReact;
           }
-
-          if (isAppSource(ctx)) {
+        }),
+        // SWC may split hook imports: useState → pixel-react but useCallback → compiled/react.
+        new webpack.NormalModuleReplacementPlugin(COMPILED_REACT, (resource: { context: string; request: string }) => {
+          if (shouldAliasPixelReact(resource.context)) {
             resource.request = pixelReact;
           }
         }),

@@ -12,7 +12,9 @@
     "db:down": "docker compose down",
     "db:setup": "./scripts/setup-db.sh",
     "lint": "pnpm -r run lint",
-    "pixel": "PIXEL_PROJECT_DIR=packages/client npx @getpixel/server"
+    "pixel": "PIXEL_PROJECT_DIR=packages/client npx @getpixel/server",
+    "test:e2e": "playwright test",
+    "test:e2e:pixel": "playwright test e2e/pixel-fixes.spec.ts"
   },
   "engines": {
     "node": ">=20"
@@ -29,6 +31,7 @@
     ]
   },
   "devDependencies": {
-    "@getpixel/server": "^0.3.0"
+    "@getpixel/server": "^0.3.0",
+    "@playwright/test": "^1.51.1"
   }
 }
