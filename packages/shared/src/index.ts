@@ -4,7 +4,7 @@ export type ColumnId = (typeof COLUMNS)[number];
 
 export const COLUMN_LABELS: Record<ColumnId, string> = {
   todo: "Todo",
-  doing: "Doing",
+  doing: "In Progress",
   to_review: "To Review",
   done: "Done",
 };

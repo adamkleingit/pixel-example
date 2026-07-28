@@ -11,7 +11,10 @@
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:setup": "./scripts/setup-db.sh",
-    "lint": "pnpm -r run lint"
+    "lint": "pnpm -r run lint",
+    "pixel": "PIXEL_PROJECT_DIR=packages/client npx @getpixel/server",
+    "test:e2e": "playwright test",
+    "test:e2e:pixel": "playwright test e2e/pixel-fixes.spec.ts"
   },
   "engines": {
     "node": ">=20"
@@ -21,7 +24,14 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "sharp",
-      "core-js-pure"
+      "core-js-pure",
+      "ffmpeg-static",
+      "onnxruntime-node",
+      "protobufjs"
     ]
+  },
+  "devDependencies": {
+    "@getpixel/server": "^0.3.0",
+    "@playwright/test": "^1.51.1"
   }
 }

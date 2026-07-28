@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_THEME, type ThemeSettings } from "@kanban/shared";
 import { api } from "@/lib/api";
 import { fontHref, themeToCssVars } from "@/lib/theme";
@@ -26,7 +19,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<ThemeSettings>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  async function refresh() {
     try {
       const settings = await api.getSettings();
       setTheme(settings.theme);
@@ -35,11 +28,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, []);
 
   useEffect(() => {
     const id = "theme-font-link";
@@ -53,10 +46,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     link.href = fontHref(theme.fontFamily);
   }, [theme.fontFamily]);
 
-  const saveTheme = useCallback(async (next: ThemeSettings) => {
+  async function saveTheme(next: ThemeSettings) {
     const saved = await api.saveSettings(next);
     setTheme(saved.theme);
-  }, []);
+  }
 
   return (
     <ThemeContext.Provider

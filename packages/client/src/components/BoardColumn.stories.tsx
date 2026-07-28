@@ -1,5 +1,6 @@
-import type { ComponentProps } from "react";
+import React, { useState, type ComponentProps } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 import {
   DndContext,
   PointerSensor,
@@ -9,7 +10,7 @@ import {
 import type { Task } from "@kanban/shared";
 import { BoardColumn } from "./BoardColumn";
 
-const tasks: Task[] = [
+const initialTasks: Task[] = [
   {
     id: "c1",
     title: "Draft acceptance criteria",
@@ -32,34 +33,47 @@ const tasks: Task[] = [
   },
 ];
 
-function ColumnHost(props: ComponentProps<typeof BoardColumn>) {
-  const sensors = useSensors(useSensor(PointerSensor));
+function ColumnHost({
+  initialTasks: seedTasks = initialTasks,
+  ...props
+}: Omit<ComponentProps<typeof BoardColumn>, "tasks" | "onEdit" | "onDelete"> & {
+  initialTasks?: Task[];
+}) {
+  const [tasks, setTasks] = useState(seedTasks);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+  );
+
   return (
     <DndContext sensors={sensors}>
       <div style={{ maxWidth: 320 }}>
-        <BoardColumn {...props} />
+        <BoardColumn
+          {...props}
+          tasks={tasks}
+          onEdit={fn()}
+          onDelete={(task) => setTasks((prev) => prev.filter((item) => item.id !== task.id))}
+        />
       </div>
     </DndContext>
   );
 }
 
-const meta: Meta<typeof BoardColumn> = {
+const meta: Meta<typeof ColumnHost> = {
   title: "Board/BoardColumn",
   component: BoardColumn,
   render: (args) => <ColumnHost {...args} />,
   args: {
     columnId: "todo",
-    tasks,
-    onEdit: () => undefined,
-    onDelete: () => undefined,
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof BoardColumn>;
+type Story = StoryObj<typeof ColumnHost>;
 
 export const Populated: Story = {};
 
 export const Empty: Story = {
-  args: { tasks: [] },
+  args: { initialTasks: [] },
 };

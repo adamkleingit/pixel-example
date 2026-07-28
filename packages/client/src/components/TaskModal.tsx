@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { COLUMNS, COLUMN_LABELS, type ColumnId, type Task } from "@kanban/shared";
 
 export interface TaskFormValues {
