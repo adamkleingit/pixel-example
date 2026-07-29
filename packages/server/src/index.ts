@@ -65,6 +65,9 @@ async function main() {
 
   await app.register(cors, {
     origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+    // Default @fastify/cors methods are GET/HEAD/POST only — PATCH/DELETE
+    // (task edit/remove) need an explicit list or cross-origin browser calls fail.
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 
   app.get("/api/health", async () => ({ ok: true }));
