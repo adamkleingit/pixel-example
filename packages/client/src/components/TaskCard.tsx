@@ -32,6 +32,19 @@ export function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
       data-dragging={isDragging && !isOverlay}
       {...(isOverlay ? {} : { ...attributes, ...listeners })}
     >
+      <button
+        type="button"
+        className="task-remove"
+        aria-label={`Remove ${task.title}`}
+        title="Remove"
+        onClick={(event) => {
+          event.stopPropagation();
+          onDelete(task);
+        }}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        ×
+      </button>
       <h3 className="task-title">{task.title}</h3>
       {task.description ? (
         <p className="task-description">{task.description}</p>
@@ -56,17 +69,6 @@ export function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
           onPointerDown={(event) => event.stopPropagation()}
         >
           Edit
-        </button>
-        <button
-          type="button"
-          className="icon-btn danger"
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete(task);
-          }}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          Remove
         </button>
       </div>
     </article>

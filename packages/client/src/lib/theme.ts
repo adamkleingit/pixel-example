@@ -9,6 +9,11 @@ const FONT_STACKS: Record<string, string> = {
   Literata: '"Literata", "Georgia", serif',
 };
 
+/**
+ * Maps the persisted ThemeSettings onto the CSS custom-property contract
+ * declared in globals.css. Semantic aliases (--background, --primary, …)
+ * resolve through var(--color-*) so they pick up these overrides automatically.
+ */
 export function themeToCssVars(theme: ThemeSettings): CSSProperties {
   return {
     ["--color-primary" as string]: theme.primaryColor,

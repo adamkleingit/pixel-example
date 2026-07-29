@@ -11,6 +11,10 @@ const config: StorybookConfig = {
   },
   async viteFinal(config) {
     return mergeConfig(config, {
+      // tsconfig sets jsx:"preserve" for Next, which makes esbuild fall back to
+      // the classic runtime and emit React.createElement into files that never
+      // import React.
+      esbuild: { jsx: "automatic" },
       resolve: {
         alias: {
           "@": path.resolve(__dirname, "../src"),
